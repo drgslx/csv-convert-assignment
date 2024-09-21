@@ -25,10 +25,20 @@ export default function Home() {
     fetchData();
   }, [datasetType]);
 
+  const handleMerge = async () => {
+    try {
+      const response = await fetch('/api/merge_csv', { method: 'POST' });
+      const result = await response.json();
+      alert(result.message); // Show success message
+    } catch (error) {
+      console.error("Error merging CSVs:", error);
+    }
+  };
+
   const headers = data.length > 0 ? Object.keys(data[0]) : [];
 
   return (
-    <div className="mx-auto p-4 max-w-[1400px]">
+    <div className="mx-auto p-4 ">
       <h1 className="text-2xl font-bold mb-4">CSV Data:</h1>
 
       <div className="mb-4">
@@ -41,7 +51,7 @@ export default function Home() {
           <option value="google">Google Dataset</option>
           <option value="website">Website Dataset</option>
           <option value="facebook">Facebook Dataset</option>
-          <option value="combined">Combined Dataset</option> {/* New option */}
+          <option value="merged">Combined Dataset</option> {/* New option */}
         </select>
       </div>
 
@@ -81,6 +91,7 @@ export default function Home() {
       ) : (
         <p>No data available yet</p>
       )}
+      <button onClick={handleMerge} className="border px-4 py-2">Merge CSVs</button>
     </div>
   );
 }
