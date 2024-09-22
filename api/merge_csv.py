@@ -11,17 +11,20 @@ csv_files = {
 }
 
 def clean_string(value):
-    """Clean strings by removing unwanted characters."""
-    return value.replace('"', '').replace('\\', '').replace('""', '').strip() if isinstance(value, str) else value
+    """Remove unwanted characters from strings."""
+    if isinstance(value, str):
+        value = value.replace('"', '').replace('\\', '').strip()
+        # Remove any trailing backslash specifically
+        if value.endswith('\\'):
+            value = value[:-1]
+    return value
 
 def clean_phone(phone):
-    """Clean the phone number by removing unwanted characters."""
     if pd.isna(phone):
         return phone
     return ''.join(filter(str.isdigit, str(phone)))
 
 def ensure_plus_prefix(phone):
-    """Ensure that the phone number has a '+' prefix."""
     phone = clean_phone(phone)
     if pd.isna(phone) or len(phone) == 0:
         return phone  # Return NaN or empty string as is
@@ -38,7 +41,6 @@ def merge_csvs():
             sep = ',' if source != 'website' else ';' 
             df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip', low_memory=False)
 
-            # Clean the 'name' column and handle missing or alternative names
             if 'name' in df.columns:
                 df['name'] = df['name'].apply(clean_string)
             elif 'legal_name' in df.columns:
@@ -46,16 +48,13 @@ def merge_csvs():
                 df['name'] = df['name'].apply(clean_string)
             else:
                 print(f"Warning: 'name' or 'legal_name' column not found in {source} dataset.")
-                continue  # Skip this dataset if no valid name column
+                continue  
 
-            # Add the source column
             df['source'] = source
 
-            # Ensure phone numbers have a '+' prefix
             if 'phone' in df.columns:
                 df['phone'] = df['phone'].apply(ensure_plus_prefix)
 
-            # Standardize category column
             if source == 'google' and 'category' in df.columns:
                 df.rename(columns={'category': 'category'}, inplace=True)
             elif source == 'website' and 's_category' in df.columns:
@@ -63,7 +62,6 @@ def merge_csvs():
             elif source == 'facebook' and 'categories' in df.columns:
                 df.rename(columns={'categories': 'category'}, inplace=True)
 
-            # Concatenate the current DataFrame to the combined DataFrame
             combined_df = pd.concat([combined_df, df[['name', 'phone', 'category', 'source']]], ignore_index=True)
 
         except FileNotFoundError:
@@ -71,18 +69,15 @@ def merge_csvs():
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
 
-    # Define a custom aggregation function to prioritize Google > Facebook > Website
     def prioritize_entries(group):
         if 'google' in group['source'].values:
             return group[group['source'] == 'google'].iloc[0]
         elif 'facebook' in group['source'].values:
             return group[group['source'] == 'facebook'].iloc[0]
-        return group.iloc[0]  # Default to first entry (website)
+        return group.iloc[0]  
 
-    # Group by phone and apply the custom function
     combined_df = combined_df.groupby('phone', as_index=False).apply(prioritize_entries)
 
-    # Reset the index after grouping
     combined_df.reset_index(drop=True, inplace=True)
 
     try:
