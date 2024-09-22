@@ -6,6 +6,7 @@ csv_files = {
     'google': os.path.join('public', 'google_dataset.csv'),
     'website': os.path.join('public', 'website_dataset.csv'),
     'facebook': os.path.join('public', 'facebook_dataset.csv'),
+    'website_address': os.path.join('public', 'website_dataset_with_address.csv'),  # Add this line
     'merged': os.path.join('public', 'merged_dataset.csv'),
 }
 
@@ -17,8 +18,6 @@ def ensure_plus_prefix(phone):
     if not phone_str.startswith('+'):
         return '+' + phone_str
     return phone_str
-
-
 
 def merge_csvs():
     combined_df = pd.DataFrame()
@@ -48,12 +47,20 @@ def merge_csvs():
             elif source == 'facebook' and 'Categories' in df.columns:
                 combined_df['Category'] = df['Categories']
 
-           
-
         except FileNotFoundError:
             print(f"File not found: {csv_files[source]}")
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
+
+    # Read the address from the website dataset with address
+    try:
+        address_df = pd.read_csv(csv_files['website_address'], sep=',', on_bad_lines='skip')
+        if 'address' in address_df.columns:
+            combined_df['address'] = address_df['address']
+    except FileNotFoundError:
+        print(f"File not found: {csv_files['website_address']}")
+    except Exception as e:
+        print(f"Error reading website address dataset: {str(e)}")
 
     # Remove duplicates and save to merged CSV
     combined_df.drop_duplicates(subset=['phone', 'name'], inplace=True)

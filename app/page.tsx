@@ -14,6 +14,8 @@ export default function Home() {
       try {
         const response = await fetch(`/api/csv-convert?dataset=${datasetType}`);
         const result = await response.json();
+
+        console.log("Fetched data:", result); // Log fetched data
         setData(result);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -25,20 +27,10 @@ export default function Home() {
     fetchData();
   }, [datasetType]);
 
-  const handleMerge = async () => {
-    try {
-      const response = await fetch('/api/merge_csv', { method: 'POST' });
-      const result = await response.json();
-      alert(result.message); // Show success message
-    } catch (error) {
-      console.error("Error merging CSVs:", error);
-    }
-  };
-
   const headers = data.length > 0 ? Object.keys(data[0]) : [];
 
   return (
-    <div className="mx-auto p-4 ">
+    <div className="mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">CSV Data:</h1>
 
       <div className="mb-4">
@@ -52,14 +44,14 @@ export default function Home() {
           <option value="website">Website Dataset</option>
           <option value="website_address">Website Dataset with Address</option>
           <option value="facebook">Facebook Dataset</option>
-          <option value="merged">Combined Dataset</option> {/* New option */}
+          <option value="merged">Combined Dataset</option>
         </select>
       </div>
 
       {loading ? (
         <p>Loading...</p>
       ) : data.length > 0 ? (
-        <div className="overflow-x-auto max-h-[720px] overflow-y-scroll"> {/* Adjust max height as needed */}
+        <div className="overflow-x-auto max-h-[720px] overflow-y-scroll">
           <table className="min-w-full divide-y divide-x divide-gray-200 border-collapse border border-gray-300">
             <thead className="bg-gray-200">
               <tr>
@@ -74,7 +66,7 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data.slice(0, 25).map((row, index) => (
+              {data.slice(0, 50).map((row, index) => (
                 <tr key={index}>
                   {headers.map((header) => (
                     <td
@@ -92,7 +84,6 @@ export default function Home() {
       ) : (
         <p>No data available yet</p>
       )}
-      <button onClick={handleMerge} className="border px-4 py-2">Merge CSVs</button>
     </div>
   );
 }

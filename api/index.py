@@ -4,7 +4,6 @@ import pandas as pd
 
 app = Flask(__name__)
 
-# CSV Paths
 csv_files = {
     'google': os.path.join('public', 'google_dataset.csv'),
     'website': os.path.join('public', 'website_dataset.csv'),
@@ -15,7 +14,7 @@ csv_files = {
 
 @app.route("/api/csv-convert")
 def get_csv_as_json():
-    dataset_type = request.args.get('dataset', 'google')  # Default to 'google'
+    dataset_type = request.args.get('dataset', 'google') 
 
     if dataset_type not in csv_files:
         return jsonify({"error": "Invalid dataset type"}), 400
@@ -37,7 +36,6 @@ def get_csv_as_json():
 
 @app.route("/api/merge-csvs", methods=["POST"])
 def merge_csvs():
-    # Merge the three datasets based on the 'phone' column
     try:
         combined_df = pd.DataFrame()
         for source in ['google', 'website', 'facebook']:
