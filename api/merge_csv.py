@@ -6,7 +6,7 @@ csv_files = {
     'google': os.path.join('api', 'google_dataset.csv'),
     'website': os.path.join('api', 'website_dataset.csv'),
     'facebook': os.path.join('api', 'facebook_dataset.csv'),
-    'website_address': os.path.join('api', 'website_dataset_with_address.csv'),  # Add this line
+    'website_address': os.path.join('api', 'website_dataset_with_address.csv'),
     'merged': os.path.join('api', 'merged_dataset.csv'),
 }
 
@@ -27,31 +27,53 @@ def merge_csvs():
             sep = ',' if source != 'website' else ';' 
             df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip')
 
+            # Add the source column
+            df['source'] = source
+
+            # Standardize the name column
             if source in ['google', 'facebook'] and 'name' in df.columns:
-                combined_df['name'] = df['name']
-            elif source == 'website' and 'LEGAL_NAME' in df.columns:
-                combined_df['name'] = df['LEGAL_NAME']
-                combined_df.rename(columns={'LEGAL_NAME': 'name'}, inplace=True)
+                df.rename(columns={'name': 'name'}, inplace=True)
+            elif source == 'website' and 'legal_name' in df.columns:
+                df.rename(columns={'legal_name': 'name'}, inplace=True)
 
+            # Ensure phone numbers have a '+' prefix
             if 'phone' in df.columns:
-                combined_df['phone'] = df['phone'].apply(ensure_plus_prefix)
+                df['phone'] = df['phone'].apply(ensure_plus_prefix)
 
-            if source == 'google' and 'Category' in df.columns:
-                combined_df['Category'] = df['Category']
+            # Standardize category column
+            if source == 'google' and 'category' in df.columns:
+                df.rename(columns={'category': 'category'}, inplace=True)
             elif source == 'website' and 's_category' in df.columns:
-                combined_df['Category'] = df['s_category']
-            elif source == 'facebook' and 'Categories' in df.columns:
-                combined_df['Category'] = df['Categories']
+                df.rename(columns={'s_category': 'category'}, inplace=True)
+            elif source == 'facebook' and 'categories' in df.columns:
+                df.rename(columns={'categories': 'category'}, inplace=True)
+
+            # Concatenate the current DataFrame to the combined DataFrame
+            combined_df = pd.concat([combined_df, df[['name', 'phone', 'category', 'source']]], ignore_index=True)
 
         except FileNotFoundError:
             print(f"File not found: {csv_files[source]}")
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
 
+    # Define a custom aggregation function to prioritize Google > Facebook > Website
+    def prioritize_entries(group):
+        if 'google' in group['source'].values:
+            return group[group['source'] == 'google'].iloc[0]
+        elif 'facebook' in group['source'].values:
+            return group[group['source'] == 'facebook'].iloc[0]
+        return group.iloc[0]  # Default to first entry (website)
+
+    # Group by phone and apply the custom function
+    combined_df = combined_df.groupby('phone', as_index=False).apply(prioritize_entries)
+
+    # Reset the index after grouping
+    combined_df.reset_index(drop=True, inplace=True)
+
     try:
         address_df = pd.read_csv(csv_files['website_address'], sep=',', on_bad_lines='skip')
         if 'address' in address_df.columns:
-            combined_df['address'] = address_df['address']
+            combined_df = combined_df.merge(address_df[['address']], left_index=True, right_index=True, how='left')
     except FileNotFoundError:
         print(f"File not found: {csv_files['website_address']}")
     except Exception as e:

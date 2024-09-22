@@ -34,35 +34,9 @@ def get_csv_as_json():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/merge-csvs", methods=["POST"])
-def merge_csvs():
-    try:
-        combined_df = pd.DataFrame()
-        for source in ['google', 'website', 'facebook']:
-            df = pd.read_csv(csv_files[source], sep=',' if source != 'website' else ';', on_bad_lines='skip')
-            if 'phone' in df.columns:
-                combined_df = pd.concat([combined_df, df[['phone']]], ignore_index=True)
-
-        combined_df.drop_duplicates(subset='phone', inplace=True)
-        combined_df.to_csv(csv_files['merged'], index=False)
-
-        return jsonify({"message": "CSV files merged successfully!"})
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/get-json")
-def get_json_data():
-    json_path = os.path.join('data', 'sample_data.json')
-    try:
-        with open(json_path, 'r') as json_file:
-            data = json.load(json_file)
-        return jsonify(data)
-    except FileNotFoundError:
-        return jsonify({"error": "File not found"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":
