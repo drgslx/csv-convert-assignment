@@ -13,9 +13,9 @@ csv_files = {
 def clean_string(value):
     """Remove unwanted characters from strings."""
     if isinstance(value, str):
-        value = value.replace('"', '').replace('\\', '').strip()
+        value = value.replace('"', ' ').replace('\\', ' ').strip()
         # Remove any trailing backslash specifically
-        if value.endswith('\\'):
+        if value.endswith('\\""'):
             value = value[:-1]
     return value
 
