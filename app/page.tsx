@@ -50,6 +50,7 @@ export default function Home() {
         >
           <option value="google">Google Dataset</option>
           <option value="website">Website Dataset</option>
+          <option value="website_address">Website Dataset with Address</option>
           <option value="facebook">Facebook Dataset</option>
           <option value="merged">Combined Dataset</option> {/* New option */}
         </select>

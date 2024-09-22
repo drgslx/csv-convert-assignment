@@ -9,6 +9,17 @@ csv_files = {
     'merged': os.path.join('public', 'merged_dataset.csv'),
 }
 
+def ensure_plus_prefix(phone):
+    """Ensure that the phone number has a '+' prefix."""
+    if pd.isna(phone):
+        return phone  # Return NaN as is
+    phone_str = str(phone).strip()
+    if not phone_str.startswith('+'):
+        return '+' + phone_str
+    return phone_str
+
+
+
 def merge_csvs():
     combined_df = pd.DataFrame()
 
@@ -19,15 +30,15 @@ def merge_csvs():
             df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip')
 
             # Handle 'name' column
-            if source == 'google' or source == 'facebook':
-                combined_df['name'] = df['name'] if 'name' in df.columns else None
+            if source in ['google', 'facebook'] and 'name' in df.columns:
+                combined_df['name'] = df['name']
             elif source == 'website' and 'LEGAL_NAME' in df.columns:
                 combined_df['name'] = df['LEGAL_NAME']
                 combined_df.rename(columns={'LEGAL_NAME': 'name'}, inplace=True)
 
-            # Handle 'phone' column
+            # Handle 'phone' column and ensure it has a '+' prefix
             if 'phone' in df.columns:
-                combined_df['phone'] = df['phone']
+                combined_df['phone'] = df['phone'].apply(ensure_plus_prefix)
 
             # Handle 'Category' column based on source
             if source == 'google' and 'Category' in df.columns:
@@ -36,6 +47,8 @@ def merge_csvs():
                 combined_df['Category'] = df['s_category']
             elif source == 'facebook' and 'Categories' in df.columns:
                 combined_df['Category'] = df['Categories']
+
+           
 
         except FileNotFoundError:
             print(f"File not found: {csv_files[source]}")

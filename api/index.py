@@ -8,6 +8,7 @@ app = Flask(__name__)
 csv_files = {
     'google': os.path.join('public', 'google_dataset.csv'),
     'website': os.path.join('public', 'website_dataset.csv'),
+    'website_address': os.path.join('public', 'website_dataset_with_address.csv'),
     'facebook': os.path.join('public', 'facebook_dataset.csv'),
     'merged': os.path.join('public', 'merged_dataset.csv')
 }
