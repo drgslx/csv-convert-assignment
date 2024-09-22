@@ -10,10 +10,21 @@ csv_files = {
     'merged': os.path.join('api', 'merged_dataset.csv'),
 }
 
+def clean_string(value):
+    """Clean strings by removing unwanted characters."""
+    return value.replace('"', '').replace('\\', '').replace('""', '').strip() if isinstance(value, str) else value
+
+def clean_phone(phone):
+    """Clean the phone number by removing unwanted characters."""
+    if pd.isna(phone):
+        return phone
+    return ''.join(filter(str.isdigit, str(phone)))
+
 def ensure_plus_prefix(phone):
     """Ensure that the phone number has a '+' prefix."""
-    if pd.isna(phone):
-        return phone  # Return NaN as is
+    phone = clean_phone(phone)
+    if pd.isna(phone) or len(phone) == 0:
+        return phone  # Return NaN or empty string as is
     phone_str = str(phone).strip()
     if not phone_str.startswith('+'):
         return '+' + phone_str
@@ -25,16 +36,20 @@ def merge_csvs():
     for source in ['google', 'website', 'facebook']:
         try:
             sep = ',' if source != 'website' else ';' 
-            df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip')
+            df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip', low_memory=False)
+
+            # Clean the 'name' column and handle missing or alternative names
+            if 'name' in df.columns:
+                df['name'] = df['name'].apply(clean_string)
+            elif 'legal_name' in df.columns:
+                df.rename(columns={'legal_name': 'name'}, inplace=True)
+                df['name'] = df['name'].apply(clean_string)
+            else:
+                print(f"Warning: 'name' or 'legal_name' column not found in {source} dataset.")
+                continue  # Skip this dataset if no valid name column
 
             # Add the source column
             df['source'] = source
-
-            # Standardize the name column
-            if source in ['google', 'facebook'] and 'name' in df.columns:
-                df.rename(columns={'name': 'name'}, inplace=True)
-            elif source == 'website' and 'legal_name' in df.columns:
-                df.rename(columns={'legal_name': 'name'}, inplace=True)
 
             # Ensure phone numbers have a '+' prefix
             if 'phone' in df.columns:

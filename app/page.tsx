@@ -73,7 +73,7 @@ export default function Home() {
                       key={header}
                       className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
                     >
-                      <div className="px-6">{row[header]}</div>
+                      <div className="">{row[header]}</div>
                     </td>
                   ))}
                 </tr>
