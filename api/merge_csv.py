@@ -3,11 +3,11 @@ import pandas as pd
 
 # Define file paths
 csv_files = {
-    'google': os.path.join('public', 'google_dataset.csv'),
-    'website': os.path.join('public', 'website_dataset.csv'),
-    'facebook': os.path.join('public', 'facebook_dataset.csv'),
-    'website_address': os.path.join('public', 'website_dataset_with_address.csv'),  # Add this line
-    'merged': os.path.join('public', 'merged_dataset.csv'),
+    'google': os.path.join('api', 'google_dataset.csv'),
+    'website': os.path.join('api', 'website_dataset.csv'),
+    'facebook': os.path.join('api', 'facebook_dataset.csv'),
+    'website_address': os.path.join('api', 'website_dataset_with_address.csv'),  # Add this line
+    'merged': os.path.join('api', 'merged_dataset.csv'),
 }
 
 def ensure_plus_prefix(phone):
@@ -24,22 +24,18 @@ def merge_csvs():
 
     for source in ['google', 'website', 'facebook']:
         try:
-            # Read each CSV file
-            sep = ',' if source != 'website' else ';'  # Adjust separator for website dataset
+            sep = ',' if source != 'website' else ';' 
             df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip')
 
-            # Handle 'name' column
             if source in ['google', 'facebook'] and 'name' in df.columns:
                 combined_df['name'] = df['name']
             elif source == 'website' and 'LEGAL_NAME' in df.columns:
                 combined_df['name'] = df['LEGAL_NAME']
                 combined_df.rename(columns={'LEGAL_NAME': 'name'}, inplace=True)
 
-            # Handle 'phone' column and ensure it has a '+' prefix
             if 'phone' in df.columns:
                 combined_df['phone'] = df['phone'].apply(ensure_plus_prefix)
 
-            # Handle 'Category' column based on source
             if source == 'google' and 'Category' in df.columns:
                 combined_df['Category'] = df['Category']
             elif source == 'website' and 's_category' in df.columns:
@@ -52,7 +48,6 @@ def merge_csvs():
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
 
-    # Read the address from the website dataset with address
     try:
         address_df = pd.read_csv(csv_files['website_address'], sep=',', on_bad_lines='skip')
         if 'address' in address_df.columns:
@@ -62,9 +57,8 @@ def merge_csvs():
     except Exception as e:
         print(f"Error reading website address dataset: {str(e)}")
 
-    # Remove duplicates and save to merged CSV
     combined_df.drop_duplicates(subset=['phone', 'name'], inplace=True)
-    combined_df.to_csv(csv_files['merged'], index=False)  # Save as CSV
+    combined_df.to_csv(csv_files['merged'], index=False) 
     print(f"Merged dataset saved as: {csv_files['merged']}")
 
 if __name__ == "__main__":

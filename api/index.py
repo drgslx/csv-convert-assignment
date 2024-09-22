@@ -5,11 +5,11 @@ import pandas as pd
 app = Flask(__name__)
 
 csv_files = {
-    'google': os.path.join('public', 'google_dataset.csv'),
-    'website': os.path.join('public', 'website_dataset.csv'),
-    'website_address': os.path.join('public', 'website_dataset_with_address.csv'),
-    'facebook': os.path.join('public', 'facebook_dataset.csv'),
-    'merged': os.path.join('public', 'merged_dataset.csv')
+    'google': os.path.join('api', 'google_dataset.csv'),
+    'website': os.path.join('api', 'website_dataset.csv'),
+    'website_address': os.path.join('api', 'website_dataset_with_address.csv'),
+    'facebook': os.path.join('api', 'facebook_dataset.csv'),
+    'merged': os.path.join('api', 'merged_dataset.csv')
 }
 
 @app.route("/api/csv-convert")

@@ -36,8 +36,6 @@ next-env.d.ts
 __pycache__
 
 #excel files
-/public/google_dataset.csv
-/public/facebook_dataset.csv
-/public/website_dataset.csv
-/public/website_dataset_with_address.csv
+/api/google_dataset.csv
+/api/facebook_dataset.csv
 
