@@ -6,6 +6,7 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [datasetType, setDatasetType] = useState('google'); // Default dataset is google
+  const [itemsToShow, setItemsToShow] = useState(50); // Default to show 50 items
 
   useEffect(() => {
     async function fetchData() {
@@ -48,6 +49,12 @@ export default function Home() {
         </select>
       </div>
 
+      <div className="mb-4">
+        <button onClick={() => setItemsToShow(100)} className="mr-2 border px-4 py-2">Show 100</button>
+        <button onClick={() => setItemsToShow(150)} className="mr-2 border px-4 py-2">Show 150</button>
+        <button onClick={() => setItemsToShow(data.length)} className="border px-4 py-2">Show All</button>
+      </div>
+
       {loading ? (
         <p>Loading...</p>
       ) : data.length > 0 ? (
@@ -66,7 +73,7 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data.slice(0, 50).map((row, index) => (
+              {data.slice(0, itemsToShow).map((row, index) => (
                 <tr key={index}>
                   {headers.map((header) => (
                     <td
