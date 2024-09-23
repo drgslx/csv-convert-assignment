@@ -6,7 +6,7 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [datasetType, setDatasetType] = useState('website'); // Default dataset is google
-  const [itemsToShow, setItemsToShow] = useState(1000); // Default to show 50 items
+  const [itemsToShow, setItemsToShow] = useState(500); // Default to show 50 items
 
   useEffect(() => {
     async function fetchData() {
