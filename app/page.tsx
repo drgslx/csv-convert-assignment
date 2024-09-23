@@ -6,7 +6,7 @@ export default function Home() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [datasetType, setDatasetType] = useState('website'); // Default dataset is google
-  const [itemsToShow, setItemsToShow] = useState(50); // Default to show 50 items
+  const [itemsToShow, setItemsToShow] = useState(1000); // Default to show 50 items
 
   useEffect(() => {
     async function fetchData() {
@@ -71,11 +71,7 @@ export default function Home() {
       </div>
 
       <div className="mb-4">
-        <button onClick={() => setItemsToShow(100)} className="mr-2 border px-4 py-2">Show 100</button>
-        <button onClick={() => setItemsToShow(150)} className="mr-2 border px-4 py-2">Show 150</button>
-        <button onClick={() => setItemsToShow(200)} className="border px-4 py-2">Show 200</button>
-        <button onClick={() => setItemsToShow(300)} className="border px-4 py-2">Show 300</button>
-        <button onClick={() => setItemsToShow(500)} className="border px-4 py-2">Show 500</button>
+      
         <button onClick={shuffleData} className="ml-4 border px-4 py-2 bg-blue-500 text-white">Shuffle Data</button>
       </div>
 
