@@ -22,7 +22,7 @@ def merge_csvs():
 
     for source in ['google', 'website', 'facebook']:
         try:
-            sep = ',' if source != 'website' else ';' 
+            sep = ',' if source != 'website' else ';'
             df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip', low_memory=False, quotechar='"', escapechar='\\')
 
             if 'name' in df.columns:
@@ -53,25 +53,16 @@ def merge_csvs():
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
 
-    combined_df = combined_df.groupby('phone', as_index=False).agg({
-        'name': lambda x: x.bfill().iloc[0],  
-        'category': lambda x: x.bfill().iloc[0],  
-        'source': 'first',  
-        'address': lambda x: x.bfill().iloc[0]  
-    })
+    # Deduplicate based on phone and address
+    combined_df.drop_duplicates(subset=['phone', 'address'], inplace=True)
 
-    combined_df.dropna(how='all', inplace=True)
-
+    # Add '+' to phone numbers
     if 'phone' in combined_df.columns:
         combined_df['phone'] = combined_df['phone'].astype(str).str.replace('.0', '', regex=False)
+        combined_df['phone'] = combined_df['phone'].apply(lambda x: x if x.startswith('+') else f'+{x}')
 
-    if 'address' in combined_df.columns:
-        combined_df['address'] = combined_df['address'].fillna(method='bfill')
-
-    combined_df.drop_duplicates(subset=['phone'], inplace=True)
-
-    if 'phone' in combined_df.columns:
-        combined_df['phone'] = '+' + combined_df['phone']
+    # Ensure the final DataFrame doesn't have NaNs
+    combined_df.dropna(how='all', inplace=True)
 
     combined_df.to_csv(csv_files['merged'], index=False) 
     print(f"Merged dataset saved as: {csv_files['merged']}")
