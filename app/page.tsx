@@ -44,7 +44,11 @@ export default function Home() {
     setData(shuffled.slice(0, itemsToShow));
   };
 
-  const headers = data.length > 0 ? Object.keys(data[0]) : [];
+  // Define the desired order of headers for the merged dataset
+  const desiredOrder = ['name', 'phone', 'address', 'category', 'source'];
+  const headers = datasetType === 'merged'
+    ? desiredOrder.filter(header => header in data[0]) // Desired order for merged dataset
+    : data.length > 0 ? Object.keys(data[0]) : []; // All columns for other datasets
 
   return (
     <div className="mx-auto p-4">
@@ -79,7 +83,7 @@ export default function Home() {
       ) : data.length > 0 ? (
         <div className="overflow-x-auto max-h-[720px] overflow-y-scroll">
           <table className="min-w-full divide-y divide-x divide-gray-200 border-collapse border border-gray-300">
-            <thead className="bg-gray-200">
+            <thead className="bg-gray-200 sticky top-0 z-10">
               <tr>
                 {headers.map((header) => (
                   <th
@@ -97,7 +101,7 @@ export default function Home() {
                   {headers.map((header) => (
                     <td
                       key={header}
-                      className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+                      className="px-4 py-4 max-w-[600px] whitespace-normal break-words text-sm font-medium text-gray-900"
                     >
                       <div className="">{row[header]}</div>
                     </td>

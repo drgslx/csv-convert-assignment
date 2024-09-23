@@ -39,6 +39,7 @@ def merge_csvs():
             if 'phone' in df.columns:
                 df['phone'] = df['phone']
 
+            # Rename category columns based on the source
             if source == 'google' and 'category' in df.columns:
                 df.rename(columns={'category': 'category'}, inplace=True)
             elif source == 'website' and 's_category' in df.columns:
@@ -46,37 +47,34 @@ def merge_csvs():
             elif source == 'facebook' and 'categories' in df.columns:
                 df.rename(columns={'categories': 'category'}, inplace=True)
 
-            combined_df = pd.concat([combined_df, df[['name', 'phone', 'category', 'source']]], ignore_index=True)
+            combined_df = pd.concat([combined_df, df[['name', 'phone', 'category', 'source', 'address']]], ignore_index=True)
 
         except FileNotFoundError:
             print(f"File not found: {csv_files[source]}")
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
 
-    def prioritize_entries(group):
-        if 'google' in group['source'].values:
-            return group[group['source'] == 'google'].iloc[0]
-        elif 'facebook' in group['source'].values:
-            return group[group['source'] == 'facebook'].iloc[0]
-        return group.iloc[0]
-    
-    combined_df.drop_duplicates(subset=['phone', 'name'], inplace=True)
-    combined_df = combined_df.groupby('phone', group_keys=False).apply(prioritize_entries)
+    # Prioritize entries based on source, including names and addresses
+    combined_df = combined_df.groupby('phone', as_index=False).agg({
+        'name': lambda x: x.bfill().iloc[0],  # Backfill to prioritize names
+        'category': lambda x: x.bfill().iloc[0],  # Backfill to prioritize categories
+        'source': 'first',  # Keep the source of the prioritized entry
+        'address': lambda x: x.bfill().iloc[0]  # Prioritize addresses
+    })
 
-    combined_df.reset_index(drop=True, inplace=True)
+    # Remove rows where all values are empty
+    combined_df.dropna(how='all', inplace=True)
 
     # Remove .0 from phone numbers
     if 'phone' in combined_df.columns:
         combined_df['phone'] = combined_df['phone'].astype(str).str.replace('.0', '', regex=False)
 
-    try:
-        address_df = pd.read_csv(csv_files['website_address'], sep=',', on_bad_lines='skip')
-        if 'address' in address_df.columns:
-            combined_df = combined_df.merge(address_df[['address']], left_index=True, right_index=True, how='left')
-    except FileNotFoundError:
-        print(f"File not found: {csv_files['website_address']}")
-    except Exception as e:
-        print(f"Error reading website address dataset: {str(e)}")
+    # Ensure that the address prioritizes Google > Facebook > Website
+    if 'address' in combined_df.columns:
+        # Prioritize Google and Facebook addresses, if available
+        combined_df['address'] = combined_df['address'].fillna(method='bfill')
+
+    combined_df.drop_duplicates(subset=['phone'], inplace=True)
 
     combined_df.to_csv(csv_files['merged'], index=False) 
     print(f"Merged dataset saved as: {csv_files['merged']}")
