@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [datasetType, setDatasetType] = useState('google'); // Default dataset is google
+  const [datasetType, setDatasetType] = useState('website'); // Default dataset is google
   const [itemsToShow, setItemsToShow] = useState(50); // Default to show 50 items
 
   useEffect(() => {
@@ -61,9 +61,9 @@ export default function Home() {
           onChange={(e) => setDatasetType(e.target.value)}
           className="border px-4 py-2"
         >
-          <option value="google">Google Dataset</option>
           <option value="website">Website Dataset</option>
           <option value="website_address">Website Dataset with Address</option>
+          <option value="google">Google Dataset</option>
           <option value="facebook">Facebook Dataset</option>
           <option value="merged">Combined Dataset</option>
         </select>
