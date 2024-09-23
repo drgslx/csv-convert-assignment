@@ -11,10 +11,8 @@ csv_files = {
 }
 
 def clean_string(value):
-    """Remove unwanted characters from strings."""
     if isinstance(value, str):
         value = value.replace('"', ' ').replace('\\', ' ').strip()
-        # Remove any trailing backslash specifically
         if value.endswith('\\""'):
             value = value[:-1]
     return value
@@ -27,7 +25,7 @@ def clean_phone(phone):
 def ensure_plus_prefix(phone):
     phone = clean_phone(phone)
     if pd.isna(phone) or len(phone) == 0:
-        return phone  # Return NaN or empty string as is
+        return phone 
     phone_str = str(phone).strip()
     if not phone_str.startswith('+'):
         return '+' + phone_str
@@ -39,7 +37,7 @@ def merge_csvs():
     for source in ['google', 'website', 'facebook']:
         try:
             sep = ',' if source != 'website' else ';' 
-            df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip', low_memory=False)
+            df = pd.read_csv(csv_files[source], sep=sep, on_bad_lines='skip', low_memory=False, quotechar='"', escapechar='\\')
 
             if 'name' in df.columns:
                 df['name'] = df['name'].apply(clean_string)
@@ -74,9 +72,10 @@ def merge_csvs():
             return group[group['source'] == 'google'].iloc[0]
         elif 'facebook' in group['source'].values:
             return group[group['source'] == 'facebook'].iloc[0]
-        return group.iloc[0]  
+        return group.iloc[0]
 
-    combined_df = combined_df.groupby('phone', as_index=False).apply(prioritize_entries)
+    # Apply grouping with `include_group=False`
+    combined_df = combined_df.groupby('phone', group_keys=False).apply(prioritize_entries)
 
     combined_df.reset_index(drop=True, inplace=True)
 
