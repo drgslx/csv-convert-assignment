@@ -76,6 +76,10 @@ def merge_csvs():
 
     combined_df.drop_duplicates(subset=['phone'], inplace=True)
 
+    # Add '+' sign to phone numbers
+    if 'phone' in combined_df.columns:
+        combined_df['phone'] = '+' + combined_df['phone']
+
     combined_df.to_csv(csv_files['merged'], index=False) 
     print(f"Merged dataset saved as: {csv_files['merged']}")
 
