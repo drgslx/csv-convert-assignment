@@ -41,7 +41,8 @@ export default function Home() {
   // Shuffle the data and update it with only the number of items to show
   const shuffleData = () => {
     const shuffled = shuffleArray(data);
-    setData(shuffled.slice(0, itemsToShow));
+    setData(shuffled.slice(0, itemsToShow)); // This line ensures you show the correct number of items
+    setItemsToShow(itemsToShow); // Reapply the itemsToShow to ensure the correct number is displayed
   };
 
   // Define the desired order of headers for the merged dataset
