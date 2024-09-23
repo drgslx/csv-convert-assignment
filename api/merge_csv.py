@@ -39,7 +39,6 @@ def merge_csvs():
             if 'phone' in df.columns:
                 df['phone'] = df['phone']
 
-            # Rename category columns based on the source
             if source == 'google' and 'category' in df.columns:
                 df.rename(columns={'category': 'category'}, inplace=True)
             elif source == 'website' and 's_category' in df.columns:
@@ -54,29 +53,23 @@ def merge_csvs():
         except Exception as e:
             print(f"Error reading {source} dataset: {str(e)}")
 
-    # Prioritize entries based on source, including names and addresses
     combined_df = combined_df.groupby('phone', as_index=False).agg({
-        'name': lambda x: x.bfill().iloc[0],  # Backfill to prioritize names
-        'category': lambda x: x.bfill().iloc[0],  # Backfill to prioritize categories
-        'source': 'first',  # Keep the source of the prioritized entry
-        'address': lambda x: x.bfill().iloc[0]  # Prioritize addresses
+        'name': lambda x: x.bfill().iloc[0],  
+        'category': lambda x: x.bfill().iloc[0],  
+        'source': 'first',  
+        'address': lambda x: x.bfill().iloc[0]  
     })
 
-    # Remove rows where all values are empty
     combined_df.dropna(how='all', inplace=True)
 
-    # Remove .0 from phone numbers
     if 'phone' in combined_df.columns:
         combined_df['phone'] = combined_df['phone'].astype(str).str.replace('.0', '', regex=False)
 
-    # Ensure that the address prioritizes Google > Facebook > Website
     if 'address' in combined_df.columns:
-        # Prioritize Google and Facebook addresses, if available
         combined_df['address'] = combined_df['address'].fillna(method='bfill')
 
     combined_df.drop_duplicates(subset=['phone'], inplace=True)
 
-    # Add '+' sign to phone numbers
     if 'phone' in combined_df.columns:
         combined_df['phone'] = '+' + combined_df['phone']
 
