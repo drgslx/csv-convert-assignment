@@ -17,20 +17,6 @@ def clean_string(value):
             value = value[:-1]
     return value
 
-def clean_phone(phone):
-    if pd.isna(phone):
-        return phone
-    return ''.join(filter(str.isdigit, str(phone)))
-
-def ensure_plus_prefix(phone):
-    phone = clean_phone(phone)
-    if pd.isna(phone) or len(phone) == 0:
-        return phone 
-    phone_str = str(phone).strip()
-    if not phone_str.startswith('+'):
-        return '+' + phone_str
-    return phone_str
-
 def merge_csvs():
     combined_df = pd.DataFrame()
 
@@ -51,7 +37,7 @@ def merge_csvs():
             df['source'] = source
 
             if 'phone' in df.columns:
-                df['phone'] = df['phone'].apply(ensure_plus_prefix)
+                df['phone'] = df['phone']
 
             if source == 'google' and 'category' in df.columns:
                 df.rename(columns={'category': 'category'}, inplace=True)
@@ -73,11 +59,15 @@ def merge_csvs():
         elif 'facebook' in group['source'].values:
             return group[group['source'] == 'facebook'].iloc[0]
         return group.iloc[0]
-
-    # Apply grouping with `include_group=False`
+    
+    combined_df.drop_duplicates(subset=['phone', 'name'], inplace=True)
     combined_df = combined_df.groupby('phone', group_keys=False).apply(prioritize_entries)
 
     combined_df.reset_index(drop=True, inplace=True)
+
+    # Remove .0 from phone numbers
+    if 'phone' in combined_df.columns:
+        combined_df['phone'] = combined_df['phone'].astype(str).str.replace('.0', '', regex=False)
 
     try:
         address_df = pd.read_csv(csv_files['website_address'], sep=',', on_bad_lines='skip')
@@ -88,7 +78,6 @@ def merge_csvs():
     except Exception as e:
         print(f"Error reading website address dataset: {str(e)}")
 
-    combined_df.drop_duplicates(subset=['phone', 'name'], inplace=True)
     combined_df.to_csv(csv_files['merged'], index=False) 
     print(f"Merged dataset saved as: {csv_files['merged']}")
 

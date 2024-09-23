@@ -28,6 +28,22 @@ export default function Home() {
     fetchData();
   }, [datasetType]);
 
+  // Fisher-Yates Shuffle Algorithm
+  const shuffleArray = (array) => {
+    const shuffledArray = [...array]; // Copy the array to avoid mutating the original array
+    for (let i = shuffledArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+    }
+    return shuffledArray;
+  };
+
+  // Shuffle the data and update it with only the number of items to show
+  const shuffleData = () => {
+    const shuffled = shuffleArray(data);
+    setData(shuffled.slice(0, itemsToShow));
+  };
+
   const headers = data.length > 0 ? Object.keys(data[0]) : [];
 
   return (
@@ -52,7 +68,10 @@ export default function Home() {
       <div className="mb-4">
         <button onClick={() => setItemsToShow(100)} className="mr-2 border px-4 py-2">Show 100</button>
         <button onClick={() => setItemsToShow(150)} className="mr-2 border px-4 py-2">Show 150</button>
-        <button onClick={() => setItemsToShow(data.length)} className="border px-4 py-2">Show All</button>
+        <button onClick={() => setItemsToShow(200)} className="border px-4 py-2">Show 200</button>
+        <button onClick={() => setItemsToShow(300)} className="border px-4 py-2">Show 300</button>
+        <button onClick={() => setItemsToShow(500)} className="border px-4 py-2">Show 500</button>
+        <button onClick={shuffleData} className="ml-4 border px-4 py-2 bg-blue-500 text-white">Shuffle Data</button>
       </div>
 
       {loading ? (

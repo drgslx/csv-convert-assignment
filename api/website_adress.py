@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-file_path = os.path.join('api', 'website_dataset.csv')  
+file_path = os.path.join('api/csv', 'website_dataset.csv')  
 df = pd.read_csv(file_path, sep=';', on_bad_lines='skip') 
 
 print("Column names in the dataset:", df.columns)
